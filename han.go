@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 )
@@ -36,12 +37,16 @@ func public(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, file)
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		//file := "pages/login.html"
-		//http.ServeFile(w, r, file)
+type Page struct {
+	Message string
+}
 
-		fmt.Fprintf(w, createLoginForm(), "")
+func login(w http.ResponseWriter, r *http.Request) {
+	loginPage := "pages/login.html"
+
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles(loginPage)
+		t.Execute(w, nil)
 
 	} else if r.Method == "POST" {
 		r.ParseForm()
@@ -52,7 +57,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		if username == "gohan" && password == "abc123" {
 			http.Redirect(w, r, "/home", http.StatusFound)
 		} else {
-			fmt.Fprintf(w, createLoginForm(), "Invalid username/passowrd")
+			t, _ := template.ParseFiles(loginPage)
+			t.Execute(w, &Page{Message: "Invalid username/password"})
 		}
 	}
 }
@@ -60,21 +66,4 @@ func login(w http.ResponseWriter, r *http.Request) {
 func home(w http.ResponseWriter, r *http.Request) {
 	file := "pages/home.html"
 	http.ServeFile(w, r, file)
-}
-
-func createLoginForm() string {
-	return `<!DOCTYPE html>
-            <html>
-            <head>
-                <title>Login</title>
-            </head>
-            <body>
-                <p>%s</p>
-                <form method="POST" action="/login">
-                    <input type="text" name="username" placeholder="Username" />
-                    <input type="password" name="password" placeholder="Password" />
-                    <input type="submit" value="Login" />
-                <form>
-            </body>
-            </html>`
 }
