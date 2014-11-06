@@ -5,6 +5,12 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"github.com/gorilla/sessions"
+	"github.com/gorilla/context"
+)
+
+var (
+	store = sessions.NewCookieStore([]byte("smallelephantandbigfly"))
 )
 
 func main() {
@@ -15,7 +21,7 @@ func main() {
 
 	// Start the server
 	log.Println("Listening on port 5000")
-	http.ListenAndServe(":5000", nil)
+	http.ListenAndServe(":5000", context.ClearHandler(http.DefaultServeMux))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -42,24 +48,36 @@ type Page struct {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	loginPage := "pages/login.html"
+	session, _ := store.Get(r, "user-session")
+	fmt.Println(session.Values["username"])
 
-	if r.Method == "GET" {
-		t, _ := template.ParseFiles(loginPage)
-		t.Execute(w, nil)
+	if session.Values["username"] == nil {
+		loginPage := "pages/login.html"
 
-	} else if r.Method == "POST" {
-		r.ParseForm()
-
-		username := r.PostForm["username"][0]
-		password := r.PostForm["password"][0]
-
-		if username == "gohan" && password == "abc123" {
-			http.Redirect(w, r, "/home", http.StatusFound)
-		} else {
+		if r.Method == "GET" {
 			t, _ := template.ParseFiles(loginPage)
-			t.Execute(w, &Page{Message: "Invalid username/password"})
+			t.Execute(w, nil)
+
+		} else if r.Method == "POST" {
+			r.ParseForm()
+
+			username := r.PostForm["username"][0]
+			password := r.PostForm["password"][0]
+
+			if username == "gohan" && password == "abc123" {
+				session.Values["username"] = username
+				session.Save(r, w)
+
+				http.Redirect(w, r, "/home", http.StatusFound)
+
+			} else {
+				t, _ := template.ParseFiles(loginPage)
+				t.Execute(w, &Page{Message: "Invalid username/password"})
+			}
 		}
+
+	} else {
+		http.Redirect(w, r, "/home", http.StatusFound)
 	}
 }
 
