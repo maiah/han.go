@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/context"
+	"github.com/gorilla/sessions"
 	"html/template"
 	"log"
 	"net/http"
-	"github.com/gorilla/sessions"
-	"github.com/gorilla/context"
 )
 
 var (
@@ -17,6 +17,7 @@ func main() {
 	// Setup route handlers
 	http.HandleFunc("/", index)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/logout", logout)
 	http.HandleFunc("/home", home)
 
 	// Start the server
@@ -48,10 +49,10 @@ type Page struct {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "user-session")
-	fmt.Println(session.Values["username"])
+	if isAuthorized(r) {
+		http.Redirect(w, r, "/home", http.StatusFound)
 
-	if session.Values["username"] == nil {
+	} else {
 		loginPage := "pages/login.html"
 
 		if r.Method == "GET" {
@@ -59,15 +60,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			t.Execute(w, nil)
 
 		} else if r.Method == "POST" {
-			r.ParseForm()
-
-			username := r.PostForm["username"][0]
-			password := r.PostForm["password"][0]
-
-			if username == "gohan" && password == "abc123" {
-				session.Values["username"] = username
-				session.Save(r, w)
-
+			if isAuthenticated(w, r) {
 				http.Redirect(w, r, "/home", http.StatusFound)
 
 			} else {
@@ -75,13 +68,46 @@ func login(w http.ResponseWriter, r *http.Request) {
 				t.Execute(w, &Page{Message: "Invalid username/password"})
 			}
 		}
-
-	} else {
-		http.Redirect(w, r, "/home", http.StatusFound)
 	}
 }
 
+func logout(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "user-session")
+	session.Options = &sessions.Options{MaxAge: -1}
+	session.Save(r, w)
+
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
-	file := "pages/home.html"
-	http.ServeFile(w, r, file)
+	if isAuthorized(r) {
+		file := "pages/home.html"
+		http.ServeFile(w, r, file)
+
+	} else {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+func isAuthorized(r *http.Request) bool {
+	session, _ := store.Get(r, "user-session")
+	return session.Values["username"] != nil
+}
+
+func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
+	authenticated := false
+	r.ParseForm()
+
+	username := r.PostForm["username"][0]
+	password := r.PostForm["password"][0]
+
+	if username == "gohan" && password == "abc123" {
+		session, _ := store.Get(r, "user-session")
+		session.Values["username"] = username
+		session.Save(r, w)
+
+		authenticated = true
+	}
+
+	return authenticated
 }
