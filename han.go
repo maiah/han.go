@@ -45,8 +45,8 @@ func public(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, file)
 }
 
-type Page struct {
-	Message string
+type page struct {
+	message string
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 			} else {
 				t, _ := template.ParseFiles(loginPage)
-				t.Execute(w, &Page{Message: "Invalid username/password"})
+				t.Execute(w, &page{message: "Invalid username/password"})
 			}
 		}
 	}
@@ -103,7 +103,6 @@ func settings(w http.ResponseWriter, r *http.Request) {
 
 func isAuthorized(r *http.Request) bool {
 	session, _ := store.Get(r, "user-session")
-	fmt.Printf("isAuthorized? %s\n", session.Values["username"])
 	return session.Values["username"] != nil
 }
 
@@ -123,4 +122,30 @@ func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	return authenticated
+}
+
+type user struct {
+	id        int
+	username  string
+	firstname string
+	lastname  string
+	role      string
+}
+
+var users = []user{
+	user{0, "gohan", "Gohan", "Macariola", "ADMIN"},
+	user{0, "maiah", "Maiah", "Macariola", "USER"},
+}
+
+func getUser(username string) (theUser user) {
+	for i := range users {
+		aUser := users[i]
+
+		if aUser.username == username {
+			theUser = aUser
+			break
+		}
+	}
+
+	return
 }
