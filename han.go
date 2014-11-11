@@ -50,28 +50,21 @@ type Page struct {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("login")
 	if isAuthorized(r) {
-		fmt.Println("DEBUG 1")
 		http.Redirect(w, r, "/home", http.StatusFound)
 
 	} else {
-		fmt.Println("DEBUG 2")
 		loginPage := "pages/login.html"
 
 		if r.Method == "GET" {
-			fmt.Println("DEBUG 3")
 			t, _ := template.ParseFiles(loginPage)
 			t.Execute(w, nil)
 
 		} else if r.Method == "POST" {
-			fmt.Println("DEBUG 4")
 			if isAuthenticated(w, r) {
-				fmt.Println("DEBUG 5")
 				http.Redirect(w, r, "/home", http.StatusFound)
 
 			} else {
-				fmt.Println("DEBUG 6")
 				t, _ := template.ParseFiles(loginPage)
 				t.Execute(w, &Page{Message: "Invalid username/password"})
 			}
@@ -89,7 +82,6 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Home")
 	if isAuthorized(r) {
 		file := "pages/home.html"
 		http.ServeFile(w, r, file)
@@ -100,7 +92,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func settings(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Settings")
 	if isAuthorized(r) {
 		file := "pages/settings.html"
 		http.ServeFile(w, r, file)
