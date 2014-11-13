@@ -1,7 +1,13 @@
 han.go
 ======
 
-Go networked application jumpstart.
+[Go](http://golang.org) networked application jumpstart.
+
+## Features
+* Basic home page.
+* Basic login/logout components.
+* Simple signup component (w/out email verification).
+* User admin pages.
 
 ## Installation
 Clone or download this repository.
