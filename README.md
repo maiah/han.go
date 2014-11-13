@@ -6,6 +6,7 @@ han.go
 ## Features
 * Basic home page.
 * Basic login/logout components.
+* Basic authentication and authorization components.
 * Simple signup component (w/out email verification).
 * User admin pages.
 
