@@ -23,7 +23,8 @@ func main() {
 
 	// Start the server
 	log.Println("Listening on port 5000")
-	http.ListenAndServe(":5000", context.ClearHandler(http.DefaultServeMux))
+	log.Fatal(http.ListenAndServe(":5000",
+		context.ClearHandler(http.DefaultServeMux)))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +47,7 @@ func public(w http.ResponseWriter, r *http.Request) {
 }
 
 type page struct {
-	message string
+	Message string
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -65,8 +66,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 				http.Redirect(w, r, "/home", http.StatusFound)
 
 			} else {
-				t, _ := template.ParseFiles(loginPage)
-				t.Execute(w, &page{message: "Invalid username/password"})
+				t, err := template.ParseFiles(loginPage)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if t.Execute(w,
+					&page{Message: "Invalid username/password"}) != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 	}
@@ -92,7 +101,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func settings(w http.ResponseWriter, r *http.Request) {
-	if isAuthorized(r) {
+	if isAuthorized(r, "ADMIN") {
 		file := "pages/settings.html"
 		http.ServeFile(w, r, file)
 
@@ -101,9 +110,21 @@ func settings(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func isAuthorized(r *http.Request) bool {
+func isAuthorized(r *http.Request, roles ...string) bool {
 	session, _ := store.Get(r, "user-session")
-	return session.Values["username"] != nil
+	if session.Values["username"] != nil {
+		if len(roles) > 0 {
+			for i := range roles {
+				if session.Values["role"] == roles[i] {
+					return true
+				}
+			}
+		} else {
+			return true
+		}
+	}
+
+	return false
 }
 
 func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
@@ -113,9 +134,14 @@ func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 	username := r.PostForm["username"][0]
 	password := r.PostForm["password"][0]
 
-	if username == "gohan" && password == "abc123" {
+	theUser := getUser(username)
+
+	if theUser != nil && theUser.password == password {
 		session, _ := store.Get(r, "user-session")
-		session.Values["username"] = username
+
+		session.Values["username"] = theUser.username
+		session.Values["role"] = theUser.role
+
 		session.Save(r, w)
 
 		authenticated = true
@@ -127,22 +153,23 @@ func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 type user struct {
 	id        int
 	username  string
+	password  string
 	firstname string
 	lastname  string
 	role      string
 }
 
 var users = []user{
-	user{0, "gohan", "Gohan", "Macariola", "ADMIN"},
-	user{0, "maiah", "Maiah", "Macariola", "USER"},
+	user{0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"},
+	user{0, "maiah", "maiah", "Maiah", "Macariola", "USER"},
 }
 
-func getUser(username string) (theUser user) {
+func getUser(username string) (theUser *user) {
 	for i := range users {
 		aUser := users[i]
 
 		if aUser.username == username {
-			theUser = aUser
+			theUser = &aUser
 			break
 		}
 	}
