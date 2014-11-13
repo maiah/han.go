@@ -1,7 +1,7 @@
 han.go
 ======
 
-Go application jumpstart.
+Go networked application jumpstart.
 
 ## Installation
 Clone or download this repository.
