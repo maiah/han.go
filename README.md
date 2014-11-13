@@ -5,6 +5,7 @@ han.go
 
 ## Features
 * Basic home page.
+* Static file serving.
 * Basic login/logout components.
 * Basic authentication and authorization components.
 * Simple signup component (w/out email verification).
