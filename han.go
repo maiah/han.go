@@ -114,8 +114,8 @@ func isAuthorized(r *http.Request, roles ...string) bool {
 	session, _ := store.Get(r, "user-session")
 	if session.Values["username"] != nil {
 		if len(roles) > 0 {
-			for i := range roles {
-				if session.Values["role"] == roles[i] {
+			for _, role := range roles {
+				if session.Values["role"] == role {
 					return true
 				}
 			}
@@ -165,9 +165,7 @@ var users = []user{
 }
 
 func getUser(username string) (theUser *user) {
-	for i := range users {
-		aUser := users[i]
-
+	for _, aUser := range users {
 		if aUser.username == username {
 			theUser = &aUser
 			break
