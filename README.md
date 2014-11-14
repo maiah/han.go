@@ -10,6 +10,7 @@ han.go
 * Basic authentication and authorization components.
 * Simple signup component (w/out email verification).
 * User admin pages.
+* Data store connection/integration (MariaDB/MySQL for the moment).
 
 ## Installation
 Clone or download this repository.
