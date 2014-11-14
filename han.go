@@ -27,6 +27,8 @@ func main() {
 		context.ClearHandler(http.DefaultServeMux)))
 }
 
+// Route Handlers
+
 func index(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
@@ -110,6 +112,8 @@ func settings(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Authentication and Authorization
+
 func isAuthorized(r *http.Request, roles ...string) bool {
 	session, _ := store.Get(r, "user-session")
 	if session.Values["username"] != nil {
@@ -149,6 +153,8 @@ func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 
 	return authenticated
 }
+
+// User Manager
 
 type user struct {
 	id        int
