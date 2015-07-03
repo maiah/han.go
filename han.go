@@ -37,11 +37,13 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if path == "/public" {
-		public(w, r)
+		public(w, r) // invoke static file handler
 	} else {
 		fmt.Fprintf(w, "welcome my han.go")
 	}
 }
+
+// Custom static file handling
 
 func public(w http.ResponseWriter, r *http.Request) {
 	file := r.URL.Path[1:]
@@ -167,7 +169,7 @@ type user struct {
 
 var users = []user{
 	user{0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"},
-	user{0, "maiah", "maiah", "Maiah", "Macariola", "USER"},
+	user{1, "maiah", "maiah", "Maiah", "Macariola", "USER"},
 }
 
 func getUser(username string) (theUser *user) {
