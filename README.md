@@ -4,10 +4,10 @@ han.go
 [Go](http://golang.org) networked application jumpstart.
 
 ## Features
-* Basic home page.
-* Static file serving.
-* Basic login/logout components.
-* Basic authentication and authorization components.
+* Basic home page. (done)
+* Static file serving. (done)
+* Basic login/logout components. (done)
+* Basic authentication and authorization components. (ongoing)
 * Simple signup component (w/out email verification).
 * User admin pages.
 * Data store connection/integration (MariaDB/MySQL for the moment).
