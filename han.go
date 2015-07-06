@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
+	"github.com/maiah/han.go/lib"
 	"html/template"
 	"log"
 	"net/http"
@@ -55,7 +56,7 @@ type page struct {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	if isAuthorized(r) {
+	if lib.IsAuthorized(store, r) {
 		http.Redirect(w, r, "/home", http.StatusFound)
 
 	} else {
@@ -66,7 +67,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			t.Execute(w, nil)
 
 		} else if r.Method == "POST" {
-			if isAuthenticated(w, r) {
+			if lib.IsAuthenticated(store, w, r) {
 				http.Redirect(w, r, "/home", http.StatusFound)
 
 			} else {
@@ -95,9 +96,16 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	if isAuthorized(r) {
-		file := "pages/home.html"
-		http.ServeFile(w, r, file)
+	if lib.IsAuthorized(store, r) {
+		homePage := "pages/home.html"
+		t, err := template.ParseFiles(homePage)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		session, _ := store.Get(r, "user-session")
+
+		t.Execute(w, &page{Message: session.Values["username"].(string)})
 
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -105,80 +113,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func settings(w http.ResponseWriter, r *http.Request) {
-	if isAuthorized(r, "ADMIN") {
+	if lib.IsAuthorized(store, r, "ADMIN") {
 		file := "pages/settings.html"
 		http.ServeFile(w, r, file)
 
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
-}
-
-// Authentication and Authorization
-
-func isAuthorized(r *http.Request, roles ...string) bool {
-	session, _ := store.Get(r, "user-session")
-	if session.Values["username"] != nil {
-		if len(roles) > 0 {
-			for _, role := range roles {
-				if session.Values["role"] == role {
-					return true
-				}
-			}
-		} else {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isAuthenticated(w http.ResponseWriter, r *http.Request) bool {
-	authenticated := false
-	r.ParseForm()
-
-	username := r.PostForm["username"][0]
-	password := r.PostForm["password"][0]
-
-	theUser := getUser(username)
-
-	if theUser != nil && theUser.password == password {
-		session, _ := store.Get(r, "user-session")
-
-		session.Values["username"] = theUser.username
-		session.Values["role"] = theUser.role
-
-		session.Save(r, w)
-
-		authenticated = true
-	}
-
-	return authenticated
-}
-
-// User Manager
-
-type user struct {
-	id        int
-	username  string
-	password  string
-	firstname string
-	lastname  string
-	role      string
-}
-
-var users = []user{
-	user{0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"},
-	user{1, "maiah", "maiah", "Maiah", "Macariola", "USER"},
-}
-
-func getUser(username string) (theUser *user) {
-	for _, aUser := range users {
-		if aUser.username == username {
-			theUser = &aUser
-			break
-		}
-	}
-
-	return
 }
