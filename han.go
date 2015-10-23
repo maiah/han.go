@@ -78,7 +78,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if t.Execute(w,
-					&page{Message: "Invalid username/password"}) != nil {
+					page{Message: "Invalid username/password"}) != nil {
 					log.Fatal(err)
 				}
 			}
@@ -105,7 +105,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 		session, _ := store.Get(r, "user-session")
 
-		t.Execute(w, &page{Message: session.Values["username"].(string)})
+		t.Execute(w, page{Message: session.Values["username"].(string)})
 
 	} else {
 		http.Redirect(w, r, "/login", http.StatusFound)
