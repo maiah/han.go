@@ -2,23 +2,16 @@ package lib
 
 // User Manager
 
-type User struct {
-	id        int
-	username  string
-	password  string
-	firstname string
-	lastname  string
-	role      string
+import "github.com/maiah/han.go/user"
+
+var users = []user.User{
+	user.NewUser(0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"),
+	user.NewUser(1, "maiah", "maiah", "Maiah", "Macariola", "USER"),
 }
 
-var users = []User{
-	User{0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"},
-	User{1, "maiah", "maiah", "Maiah", "Macariola", "USER"},
-}
-
-func GetUser(username string) (theUser *User) {
+func GetUser(username string) (theUser *user.User) {
 	for _, aUser := range users {
-		if aUser.username == username {
+		if aUser.Username() == username {
 			theUser = &aUser
 			break
 		}

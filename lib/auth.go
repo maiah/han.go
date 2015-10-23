@@ -33,11 +33,11 @@ func IsAuthenticated(store sessions.Store, w http.ResponseWriter, r *http.Reques
 
 	theUser := GetUser(username)
 
-	if theUser != nil && theUser.password == password {
+	if theUser != nil && theUser.Password() == password {
 		session, _ := store.Get(r, "user-session")
 
-		session.Values["username"] = theUser.username
-		session.Values["role"] = theUser.role
+		session.Values["username"] = theUser.Username()
+		session.Values["role"] = theUser.Role()
 
 		session.Save(r, w)
 
