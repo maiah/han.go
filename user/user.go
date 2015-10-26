@@ -1,6 +1,6 @@
 package user
 
-func NewUser(id int, username, password, firstname, lastname, role string) User {
+func New(id int, username, password, firstname, lastname, role string) User {
 	return User{id, username, password, firstname, lastname, role}
 }
 
@@ -26,7 +26,7 @@ func (u User) Password() string {
 	return u.password
 }
 
-func (u User) Firstname() string{
+func (u User) Firstname() string {
 	return u.firstname
 }
 

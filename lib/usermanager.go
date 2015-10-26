@@ -5,8 +5,8 @@ package lib
 import "github.com/maiah/han.go/user"
 
 var users = []user.User{
-	user.NewUser(0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"),
-	user.NewUser(1, "maiah", "maiah", "Maiah", "Macariola", "USER"),
+	user.New(0, "gohan", "gohan", "Gohan", "Macariola", "ADMIN"),
+	user.New(1, "maiah", "maiah", "Maiah", "Macariola", "USER"),
 }
 
 func GetUser(username string) (theUser *user.User) {
