@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
-	"github.com/maiah/han.go/lib"
+	"github.com/maiah/han.go/components/auth"
 	"html/template"
 	"log"
 	"net/http"
@@ -56,7 +56,7 @@ type page struct {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	if lib.IsAuthorized(store, r) {
+	if auth.IsAuthorized(store, r) {
 		http.Redirect(w, r, "/home", http.StatusFound)
 
 	} else {
@@ -67,7 +67,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			t.Execute(w, nil)
 
 		} else if r.Method == "POST" {
-			if lib.IsAuthenticated(store, w, r) {
+			if auth.IsAuthenticated(store, w, r) {
 				http.Redirect(w, r, "/home", http.StatusFound)
 
 			} else {
@@ -96,7 +96,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	if lib.IsAuthorized(store, r) {
+	if auth.IsAuthorized(store, r) {
 		homePage := "pages/home.html"
 		t, err := template.ParseFiles(homePage)
 		if err != nil {
@@ -113,7 +113,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func settings(w http.ResponseWriter, r *http.Request) {
-	if lib.IsAuthorized(store, r, "ADMIN") {
+	if auth.IsAuthorized(store, r, "ADMIN") {
 		file := "pages/settings.html"
 		http.ServeFile(w, r, file)
 

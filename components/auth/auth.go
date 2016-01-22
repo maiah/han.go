@@ -1,14 +1,16 @@
-package lib
+package auth
 
 // Authentication and Authorization
 
 import (
 	"github.com/gorilla/sessions"
+	"github.com/maiah/han.go/components/usermanager"
 	"net/http"
 )
 
 func IsAuthorized(store sessions.Store, r *http.Request, roles ...string) bool {
 	session, _ := store.Get(r, "user-session")
+
 	if session.Values["username"] != nil {
 		if len(roles) > 0 {
 			for _, role := range roles {
@@ -31,7 +33,7 @@ func IsAuthenticated(store sessions.Store, w http.ResponseWriter, r *http.Reques
 	username := r.PostForm["username"][0]
 	password := r.PostForm["password"][0]
 
-	theUser := GetUser(username)
+	theUser := usermanager.GetUser(username)
 
 	if theUser != nil && theUser.Password() == password {
 		session, _ := store.Get(r, "user-session")
