@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/context"
-	"github.com/gorilla/sessions"
+	"github.com/maiah/han.go/Godeps/_workspace/src/github.com/gorilla/context"
+	"github.com/maiah/han.go/Godeps/_workspace/src/github.com/gorilla/sessions"
 	"github.com/maiah/han.go/components/auth"
 	"html/template"
 	"log"
