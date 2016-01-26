@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -22,9 +23,11 @@ func main() {
 	http.HandleFunc("/home", home)
 	http.HandleFunc("/settings", settings)
 
+	port := os.Getenv("PORT")
+
 	// Start the server
-	log.Println("Listening on port 5000")
-	log.Fatal(http.ListenAndServe(":5000",
+	log.Println("Listening on port " + port)
+	log.Fatal(http.ListenAndServe(":"+port,
 		context.ClearHandler(http.DefaultServeMux)))
 }
 
