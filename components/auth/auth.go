@@ -3,7 +3,7 @@ package auth
 // Authentication and Authorization
 
 import (
-	"github.com/gorilla/sessions"
+	"github.com/maiah/han.go/Godeps/_workspace/src/github.com/gorilla/sessions"
 	"github.com/maiah/han.go/components/usermanager"
 	"net/http"
 )
