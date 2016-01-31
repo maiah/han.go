@@ -1,27 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"github.com/maiah/han.go/Godeps/_workspace/src/github.com/gorilla/context"
 	"github.com/maiah/han.go/Godeps/_workspace/src/github.com/gorilla/sessions"
-	"github.com/maiah/han.go/components/auth"
-	"html/template"
+	authRoutes "github.com/maiah/han.go/components/auth/routes"
+	"github.com/maiah/han.go/components/home"
+	"github.com/maiah/han.go/components/index"
+	"github.com/maiah/han.go/components/settings"
 	"log"
 	"net/http"
 	"os"
 )
 
-var (
-	store = sessions.NewCookieStore([]byte("smallelephantandbigfly"))
-)
-
 func main() {
+	store := sessions.NewCookieStore([]byte("smallelephantandbigfly"))
+
 	// Setup route handlers
-	http.HandleFunc("/", index)
-	http.HandleFunc("/login", login)
-	http.HandleFunc("/logout", logout)
-	http.HandleFunc("/home", home)
-	http.HandleFunc("/settings", settings)
+	http.HandleFunc("/", index.Index)
+	http.HandleFunc("/login", authRoutes.Login(store))
+	http.HandleFunc("/logout", authRoutes.Logout(store))
+	http.HandleFunc("/home", home.Home(store))
+	http.HandleFunc("/settings", settings.Settings(store))
 
 	port := os.Getenv("PORT")
 
@@ -29,98 +28,4 @@ func main() {
 	log.Println("Listening on port " + port)
 	log.Fatal(http.ListenAndServe(":"+port,
 		context.ClearHandler(http.DefaultServeMux)))
-}
-
-// Route Handlers
-
-func index(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-
-	if len(path) >= 7 {
-		path = r.URL.Path[0:7]
-	}
-
-	if path == "/public" {
-		public(w, r) // invoke static file handler
-	} else {
-		fmt.Fprintf(w, "welcome my han.go")
-	}
-}
-
-// Custom static file handling
-
-func public(w http.ResponseWriter, r *http.Request) {
-	file := r.URL.Path[1:]
-	http.ServeFile(w, r, file)
-}
-
-type page struct {
-	Message string
-}
-
-func login(w http.ResponseWriter, r *http.Request) {
-	if auth.IsAuthorized(store, r) {
-		http.Redirect(w, r, "/home", http.StatusFound)
-
-	} else {
-		loginPage := "pages/login.html"
-
-		if r.Method == "GET" {
-			t, _ := template.ParseFiles(loginPage)
-			t.Execute(w, nil)
-
-		} else if r.Method == "POST" {
-			if auth.IsAuthenticated(store, w, r) {
-				http.Redirect(w, r, "/home", http.StatusFound)
-
-			} else {
-				t, err := template.ParseFiles(loginPage)
-
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				if t.Execute(w,
-					page{Message: "Invalid username/password"}) != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}
-}
-
-func logout(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "user-session")
-	session.Options = &sessions.Options{MaxAge: -1}
-	session.Values = nil
-	session.Save(r, w)
-
-	http.Redirect(w, r, "/login", http.StatusFound)
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	if auth.IsAuthorized(store, r) {
-		homePage := "pages/home.html"
-		t, err := template.ParseFiles(homePage)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		session, _ := store.Get(r, "user-session")
-
-		t.Execute(w, page{Message: session.Values["username"].(string)})
-
-	} else {
-		http.Redirect(w, r, "/login", http.StatusFound)
-	}
-}
-
-func settings(w http.ResponseWriter, r *http.Request) {
-	if auth.IsAuthorized(store, r, "ADMIN") {
-		file := "pages/settings.html"
-		http.ServeFile(w, r, file)
-
-	} else {
-		http.Redirect(w, r, "/login", http.StatusFound)
-	}
 }
